@@ -20,7 +20,15 @@
 </head>
 
 <body>
-
+<div>
+    vault:
+    <a href="{{ url_for('admins.do_index') }}">Home</a>
+    {% if current_user.is_anonymous %}
+    <a href="{{ url_for('admins.login') }}">Login</a>
+    {% else %}
+    <a href="{{ url_for('admins.logout') }}">Logout</a>
+    {% endif %}
+</div>
 {% block body %} {% endblock %}
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
