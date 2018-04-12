@@ -17,6 +17,13 @@ migrate = Migrate(app.app, db)
 
 from swagger_server import encoder
 from swagger_server.controllers.admins import adm
+from swagger_server.models import User
+
+# u = User(username='xavier', email='xavier@mayeur.be')
+# u.set_password('pignouf')
+# db.session.add(u)
+# db.session.commit()
+
 
 app.app.register_blueprint(adm, url_prefix='/admins')
 app.app.json_encoder = encoder.JSONEncoder
