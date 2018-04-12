@@ -72,6 +72,5 @@ target/
 .ipynb_checkpoints
 
 # Specific
-id.db
+id.db*
 git_push.sh
-id.*
