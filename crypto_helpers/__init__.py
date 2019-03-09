@@ -33,15 +33,6 @@ def create_table_id_tbl(db):
     return engine
 
 
-def create_keyset(name='key'):
-    key = RSA.generate(2048)
-    with open('priv_' + name + '.pem', 'wb') as f:
-        f.write(key.exportKey('PEM'))
-    pubkey = key.publickey()
-    with open('pub_' + name + '.pem', 'wb') as f:
-        f.write(pubkey.exportKey())
-
-
 class AEScipher:
     def __init__(self, db='/conf/.id.db'):
         if os.path.isfile(db):
@@ -151,9 +142,29 @@ class AEScipher:
 
 class RSAcipher:
     
-    def __init__(self, certfile):
-        self.key = RSA.importKey(open(certfile).read())
+    def __init__(self, certfile=None, key=None):
+        if key is not None:
+            self.key = RSA.importKey(key)
+        
+        elif certfile is not None:
+            self.key = RSA.importKey(open(certfile).read())
+        
+        else:
+            self.key = RSA.generate(2048)
+        
+        _pubkey = self.key.publickey()
+        self.pubkey = _pubkey.exportKey()
+        self.privkey = self.key.exportKey('PEM')
         self.rsa = PKCS1_OAEP.new(self.key)
+    
+    def create_keyset(self, name='key'):
+        self.key = RSA.generate(2048)
+        with open('priv_' + name + '.pem', 'wb') as f:
+            f.write(self.key.exportKey('PEM'))
+        self.pubkey = self.key.publickey()
+        with open('pub_' + name + '.pem', 'wb') as f:
+            f.write(self.pubkey.exportKey())
+        return self.key
     
     def encrypt(self, text):
         return b64encode(self.rsa.encrypt(text.encode())).decode()
@@ -173,8 +184,17 @@ def main():
     if aes.decrypt(msg) != text:
         print('Failed AES encrypt-decrypt')
         return
-    
-    create_keyset('test')
+
+    rsa = RSAcipher()
+    k = rsa.privkey
+    msg = rsa.encrypt(text)
+    rsa1 = RSAcipher(key=k)
+    if rsa1.decrypt(msg) != text:
+        print('Failed RSA-1 encrypt-decrypt')
+        return
+
+    rsa = RSAcipher()
+    rsa.create_keyset('test')
     rsa = RSAcipher('pub_test.pem')
     msg = rsa.encrypt(text)
     rsa = RSAcipher('priv_test.pem')
