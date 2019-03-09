@@ -29,7 +29,8 @@ class Identity(Base):
 
 def create_table_id_tbl(db):
     engine = create_engine('sqlite:///' + db)
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine, tables=[Base.metadata.tables["id_tbl"]])
+    return engine
 
 
 def create_keyset(name='key'):
@@ -43,9 +44,11 @@ def create_keyset(name='key'):
 
 class AEScipher:
     def __init__(self, db='/conf/.id.db'):
-        if os.name == 'nt':
-            db = 'id.db'
-        engine = create_engine('sqlite:///' + db)
+        if os.path.isfile(db):
+            engine = create_engine('sqlite:///' + db)
+        else:
+            engine = create_table_id_tbl(db)
+            
         Base.metadata.bind = engine
         DBsession = sessionmaker()
         DBsession.bind = engine
@@ -57,7 +60,7 @@ class AEScipher:
     def encrypt(self, text):
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CFB, iv)
-        return b64encode(iv + cipher.encrypt(text))
+        return b64encode(iv + cipher.encrypt(text.encode()))
     
     def decrypt(self, msg):
         msg = b64decode(msg)
@@ -80,7 +83,7 @@ class AEScipher:
         if row is None:
             self.sql.add(Identity(uid=uid, id=ID_))
         else:
-            row.ID = ID_
+            row.id = ID_
         self.sql.commit()
     
     def read(self, uid):
@@ -135,7 +138,6 @@ class AEScipher:
         return json.dumps(dd, indent=4)
     
     def load(self, data):
-        # dd = json.loads(data)
         for d in data:
             uid_ = d['id']
             user = d['username']
@@ -164,10 +166,10 @@ class RSAcipher:
 
 
 def main():
-    create_table_id_tbl(db='id.db')
+    db = r'd:\Documents\Python\vault\test.db'
     text = 'Hello Lobo'
-    aes = AEScipher(db='id.db')
-    msg = aes.encrypt(text.encode())
+    aes = AEScipher(db=db)
+    msg = aes.encrypt(text)
     if aes.decrypt(msg) != text:
         print('Failed AES encrypt-decrypt')
         return
@@ -206,6 +208,7 @@ def main():
     for i in range(1, 10):
         aes.remove(i, 'pwd' + str(i))
     
+    dd = json.loads(dd)
     aes.load(dd)
     dd1 = aes.dump()
     if dd == dd1:
@@ -215,7 +218,7 @@ def main():
     
     # perform some cleaning here - remove test files
     aes.close()
-    os.remove('id.db')
+    os.remove(db)
     
     os.remove('priv_test.pem')
     os.remove('pub_test.pem')

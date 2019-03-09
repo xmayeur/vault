@@ -1,4 +1,5 @@
 import getpass
+import json
 import sys
 
 import crypto_helpers as c
@@ -11,7 +12,10 @@ uid = input('Enter a IdentityId: ')
 if uid == 'dump':
     print(aes.dump())
 elif uid == 'load':
-    pass
+    with open('id.json', 'r') as f:
+        data = json.load(f)
+    print(data)
+    aes.load(data)
 elif uid == 'create':
     c.create_table_id_tbl(db)
 else:

@@ -1,6 +1,7 @@
 import connexion
 
 import crypto_helpers as c
+from swagger_server import db_path
 from swagger_server.models.id import Id  # noqa: E501
 
 
@@ -16,7 +17,7 @@ def delete_identity(IdentityItem=None):  # noqa: E501
     """
     if connexion.request.is_json:
         IdentityItem = Id.from_dict(connexion.request.get_json())  # noqa: E501
-        aes = c.AEScipher()
+        aes = c.AEScipher(db_path)
         
         if aes.remove(IdentityItem.id, IdentityItem.password):
             msg = {'status': 201, 'message': 'Identity %s removed' % IdentityItem.id}
@@ -37,7 +38,7 @@ def get_identity(uid):  # noqa: E501
 
     :rtype: Id
     """
-    aes = c.AEScipher()
+    aes = c.AEScipher(db_path)
     user, pwd = aes.read(uid=uid)
     aes.close()
     if user != '':
@@ -58,7 +59,7 @@ def post_identity(IdentityItem=None):  # noqa: E501
     """
     if connexion.request.is_json:
         IdentityItem = Id.from_dict(connexion.request.get_json())  # noqa: E501
-        aes = c.AEScipher()
+        aes = c.AEScipher(db_path)
         user, _ = aes.read(IdentityItem.id)
         if user != '':
             aes.close()
@@ -81,7 +82,7 @@ def put_identity(IdentityItem=None):  # noqa: E501
     """
     if connexion.request.is_json:
         IdentityItem = Id.from_dict(connexion.request.get_json())  # noqa: E501
-        aes = c.AEScipher()
+        aes = c.AEScipher(db_path)
         user, _ = aes.read(IdentityItem.id)
         if user != '':
             aes.save(IdentityItem.id, IdentityItem.username, IdentityItem.password)

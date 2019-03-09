@@ -14,6 +14,7 @@ login = LoginManager(application)
 app.app.config.from_object(Config)
 db = SQLAlchemy(app.app)
 migrate = Migrate(app.app, db)
+db_path = app.app.config["DB_PATH"]
 
 from swagger_server import encoder
 from swagger_server.controllers.admins import adm
