@@ -29,7 +29,7 @@ class Identity(Base):
 
 def create_table_id_tbl(db):
     engine = create_engine('sqlite:///' + db)
-    Base.metadata.create_all(engine, tables=[Base.metadata.tables["id_tbl"]])
+    Base.metadata.create_all(engine)  # , tables=[Base.metadata.tables["id_tbl"]]
     return engine
 
 
