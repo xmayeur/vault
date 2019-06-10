@@ -66,4 +66,6 @@ target/
 # Specific
 id.db*
 git_push.sh
+id.json
+*.db
 
